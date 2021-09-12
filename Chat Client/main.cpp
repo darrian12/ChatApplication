@@ -1,6 +1,10 @@
+#include "util.h"
+
 #include <iostream>
 
 int main()
 {
-    std::cout << "Hello Client!\n";
+    LOG("normal log!");
+    LOG_WARNING("Uh oh, a warning!");
+    LOG_ERROR("Good error!");
 }
