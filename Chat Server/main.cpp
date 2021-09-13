@@ -21,6 +21,7 @@ int main()
     if (listenSocket == INVALID_SOCKET)
     {
         LOG_ERROR("Failed to create socket with error - " + std::to_string(WSAGetLastError()));
+        WSACleanup();
         return 1;
     }
 
@@ -34,6 +35,7 @@ int main()
     bind(listenSocket, (const sockaddr*)&hint, sizeof(hint));
     
     listen(listenSocket, SOMAXCONN);
+    LOG("Server is listening for connections..");
 
     sockaddr_in client;
     int clientSize = sizeof(client);
@@ -42,6 +44,7 @@ int main()
     if (clientSocket == INVALID_SOCKET)
     {
         LOG_ERROR("Failed to create client socket with error - " + std::to_string(WSAGetLastError()));
+        WSACleanup();
         return 1;
     }
 
@@ -87,12 +90,13 @@ int main()
             continue;
         }
 
-        std::cout << "[CLIENT]: " << buf << " | bytes: " << bytesReceived << "\n";
-        //send(clientSocket, buf, bytesReceived + 1, 0);
+        std::cout << "[CLIENT]: " << std::string(buf, 0, bytesReceived) << "\n";
+        std::string response = "message received";
+        send(clientSocket, response.c_str(), response.size() + 1, 0);
     }
 
+    LOG("Shutting down server..");
     closesocket(clientSocket);
-
     WSACleanup();
 
     return 0;
