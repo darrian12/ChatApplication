@@ -46,3 +46,6 @@ bld/
 # Visual Studio 2019 cache/options directory
 .vs/
 *.vcxproj.user
+
+# Ignore personal files
+*.txt
