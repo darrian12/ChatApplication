@@ -1,5 +1,6 @@
 #include "util.h"
 
+#include <sstream>
 #include <iostream>
 #include <WS2tcpip.h>
 
@@ -37,67 +38,75 @@ int main()
     listen(listenSocket, SOMAXCONN);
     LOG("Server is listening for connections..");
 
-    sockaddr_in client;
-    int clientSize = sizeof(client);
+    fd_set master;
+    FD_ZERO(&master);
 
-    SOCKET clientSocket = accept(listenSocket, (sockaddr*)&client, &clientSize);
-    if (clientSocket == INVALID_SOCKET)
-    {
-        LOG_ERROR("Failed to create client socket with error - " + std::to_string(WSAGetLastError()));
-        WSACleanup();
-        return 1;
-    }
-
-    char host[NI_MAXHOST];  // client remote name
-    char service[NI_MAXSERV]; // service of client (port)
-
-    ZeroMemory(host, NI_MAXHOST);
-    ZeroMemory(service, NI_MAXSERV);
-
-    if (getnameinfo((sockaddr*)&client, clientSize, host, NI_MAXHOST, service, NI_MAXSERV, 0))
-    {
-        LOG(std::string(host) + " connected on port " + std::string(service));
-    }
-    else
-    {
-        inet_ntop(AF_INET, &client.sin_addr, host, NI_MAXHOST);
-        LOG(std::string(host) + " connected on port " + std::to_string(ntohs(client.sin_port)));
-    }
-
-    closesocket(listenSocket);
-
-    char buf[4096];
+    FD_SET(listenSocket, &master);
 
     while (true)
     {
-        ZeroMemory(buf, 4096);
+        fd_set copyMaster = master;
 
-        int bytesReceived = recv(clientSocket, buf, 4096, 0);
-        if (bytesReceived == SOCKET_ERROR)
+        int socketCount = select(0, &copyMaster, nullptr, nullptr, nullptr);
+
+        for (int i = 0; i < socketCount; i++)
         {
-            LOG_ERROR("failed recv() with error - " + std::to_string(WSAGetLastError()));
-            break;
-        }
+            SOCKET sock = copyMaster.fd_array[i];
+            if (sock == listenSocket)
+            {
+                sockaddr_in client;
+                int clientSize = sizeof(client);
 
-        if (bytesReceived == 0)
-        {
-            LOG("client disconnected");
-            break;
-        }
+                SOCKET clientSocket = accept(listenSocket, (sockaddr*)&client, &clientSize);
+                if (clientSocket == INVALID_SOCKET)
+                {
+                    LOG_ERROR("Failed to create client socket with error - " + std::to_string(WSAGetLastError()));
+                    continue;
+                }
 
-        if (buf[1] == '\n')
-        {
-            continue;
-        }
+                FD_SET(clientSocket, &master);
 
-        std::cout << "[CLIENT]: " << std::string(buf, 0, bytesReceived) << "\n";
-        std::string response = "message received";
-        send(clientSocket, response.c_str(), response.size() + 1, 0);
+                std::string msg = "Succesfully connected to the server!\n";
+                send(clientSocket, msg.c_str(), msg.size() + 1, 0);
+            }
+            else
+            {
+                char buf[4096];
+                ZeroMemory(buf, 4096);
+
+                int bytesReceived = recv(sock, buf, 4096, 0);
+                if (bytesReceived <= 0)
+                {
+                    closesocket(sock);
+                    FD_CLR(sock, &master);
+                    LOG("Client disconnected");
+                }
+                else
+                {
+                    std::cout << "[CLIENT #" << sock << "]: " << std::string(buf, 0, bytesReceived) << "\n";
+
+                    for (unsigned int i = 0; i < master.fd_count; i++)
+                    {
+                        SOCKET outSock = master.fd_array[i];
+                        if (outSock != listenSocket && outSock != sock)
+                        {
+                            std::ostringstream ss;
+                            ss << "SOCKET #" << sock << "> " << buf;
+
+                            //std::cout << "sending to #" << outSock << "\n";
+                            send(outSock, ss.str().c_str(), ss.str().size() + 1, 0);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     LOG("Shutting down server..");
-    closesocket(clientSocket);
+    closesocket(listenSocket);
     WSACleanup();
+
+    system("pause");
 
     return 0;
 }
