@@ -1,10 +1,28 @@
 #include "util.h"
 
 #include <iostream>
+#include <thread>
 #include <string>
 #include <WS2tcpip.h>
 
 #pragma comment (lib, "ws2_32.lib")
+
+void Listening(SOCKET s)
+{
+    char buf[4096];
+    std::string line;
+
+    while (s != INVALID_SOCKET)
+    {
+        ZeroMemory(buf, 4096);
+
+        int bytesIn = recv(s, buf, 4096, 0);
+        if (bytesIn > 0)
+        {
+            std::cout << buf << "\n";
+        }
+    }
+}
 
 int main()
 {
@@ -43,10 +61,10 @@ int main()
         return 1;
     }
 
-    LOG("Succesfully connected to server!");
+    //LOG("Succesfully connected to server!");
 
-    char buf[4096];
     std::string input;
+    std::thread listenWorker(Listening, sock);
 
     do
     {
@@ -55,21 +73,14 @@ int main()
 
         if (input.size() > 0)
         {
-            int sendResult = send(sock, input.c_str(), input.size() + 1, 0);
-            if (sendResult != SOCKET_ERROR)
-            {
-                ZeroMemory(buf, 4096);
-                int bytesReceived = recv(sock, buf, 4096, 0);
-                if (bytesReceived > 0)
-                {
-                    std::cout << "SERVER> " << std::string(buf, 0, bytesReceived) << "\n";
-                }
-            }
+            send(sock, input.c_str(), input.size() + 1, 0);
         }
     } while (input.size() > 0);
 
     closesocket(sock);
     WSACleanup();
+
+    listenWorker.join();
 
     return 0;
 }
