@@ -21,12 +21,18 @@
     <ClCompile Include="Socket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TcpConnecter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TcpListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Socket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpConnecter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

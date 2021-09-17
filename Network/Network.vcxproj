@@ -145,10 +145,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Socket.cpp" />
+    <ClCompile Include="TcpConnecter.cpp" />
     <ClCompile Include="TcpListener.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Socket.h" />
+    <ClInclude Include="TcpConnecter.h" />
     <ClInclude Include="TcpListener.h" />
   </ItemGroup>
   <ItemGroup>
