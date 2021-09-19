@@ -17,11 +17,6 @@ bool Network::TcpListener::Init()
     return InitWinsock(2, 2);
 }
 
-void Network::TcpListener::Send(int socketId, const std::string& msg)
-{
-    send(socketId, msg.c_str(), msg.size() + 1, 0);
-}
-
 void Network::TcpListener::Run()
 {
     SOCKET listenSocket = CreateListenSocket();
@@ -54,7 +49,7 @@ void Network::TcpListener::Run()
                 FD_SET(clientSocket, &master);
 
                 std::string msg = "Succesfully connected to the server!\n";
-                Send(clientSocket, msg);
+                SendMsg(clientSocket, msg);
             }
             else
             {
@@ -79,7 +74,7 @@ void Network::TcpListener::Run()
                         {
                             if (m_messageReceivedHandler != nullptr)
                             {
-                                m_messageReceivedHandler(this, outSock, std::string(buf, 0, bytesReceived));
+                                m_messageReceivedHandler(this, outSock, sock, std::string(buf, 0, bytesReceived));
                             }
                         }
                     }
@@ -89,11 +84,6 @@ void Network::TcpListener::Run()
     }
 
     closesocket(listenSocket);
-}
-
-void Network::TcpListener::Cleanup()
-{
-    WSACleanup();
 }
 
 SOCKET Network::TcpListener::CreateListenSocket()

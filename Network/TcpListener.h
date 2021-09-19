@@ -13,7 +13,7 @@
 namespace Network
 {
     class TcpListener;
-    typedef void (*MessageReceivedHandler)(TcpListener* listener, int socketId, const std::string& msg);
+    typedef void (*MessageReceivedHandler)(TcpListener* listener, int clientSocket, int senderSocket, const std::string& msg);
 
     class TcpListener : public Socket
     {
@@ -23,9 +23,7 @@ namespace Network
 
         bool Init();
 
-        void Send(int socketId, const std::string& msg);
         void Run();
-        void Cleanup();
 
     private:
         // Creates listen socket
