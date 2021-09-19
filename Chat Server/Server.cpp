@@ -7,7 +7,7 @@
 
 #pragma comment (lib, "ws2_32.lib")
 
-void ListenerMessageReceived(Network::TcpListener* listener, int client, const std::string& msg);
+void ListenerMessageReceived(Network::TcpListener* listener, int client, int sender, const std::string& msg);
 
 int main()
 {
@@ -20,10 +20,10 @@ int main()
     return 0;
 }
 
-void ListenerMessageReceived(Network::TcpListener* listener, int client, const std::string& msg)
+void ListenerMessageReceived(Network::TcpListener* listener, int client, int sender, const std::string& msg)
 {
     std::ostringstream ss;
-    ss << "SOCKET #" << client << "> " << msg;
+    ss << "SOCKET #" << sender << "> " << msg;
 
-    listener->Send(client, ss.str());
+    listener->SendMsg(client, ss.str());
 }
