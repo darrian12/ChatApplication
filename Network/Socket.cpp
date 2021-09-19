@@ -34,3 +34,13 @@ SOCKET Network::Socket::CreateSocket(int family, int type, int protocol)
 
     return sock;
 }
+
+void Network::Socket::Cleanup()
+{
+    WSACleanup();
+}
+
+void Network::Socket::SendMsg(int socketId, const std::string& msg)
+{
+    send(socketId, msg.c_str(), msg.size() + 1, 0);
+}

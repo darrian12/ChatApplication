@@ -15,5 +15,8 @@ namespace Network
 
         bool InitWinsock(int vA, int vB);
         SOCKET CreateSocket(int family, int type, int protocol);
+
+        virtual void Cleanup();
+        virtual void SendMsg(int socketId, const std::string& msg);
     };
 }
